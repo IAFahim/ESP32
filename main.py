@@ -65,33 +65,35 @@ morseAlphabet = {
 }
 
 
-def connect():
+def connect(ssid, password, times=15):
     wifi = network.WLAN(network.STA_IF)
+    if wifi.isconnected():
+        return wifi
     wifi.active(True)
 
     networks = wifi.scan()
     print(networks)
 
-    CONNECTION_TIMEOUT_SEC = 10
+    CONNECTION_TIMEOUT_SEC = times
 
-    wifi.connect('HP_LaserZet_2045', 'fahimfahim')
+    wifi.connect(ssid, password)
 
     print("connecting...")
-    while (not wifi.isconnected()) and CONNECTION_TIMEOUT_SEC < 0:
-        print(10 - CONNECTION_TIMEOUT_SEC)
+    while (not wifi.isconnected()) and CONNECTION_TIMEOUT_SEC > 0:
+        print(times - CONNECTION_TIMEOUT_SEC)
         CONNECTION_TIMEOUT_SEC -= 1
-        time.sleep(1000)
+        time.sleep(1)
     if (wifi.isconnected()):
         return wifi
 
 
-def fetch_data_and_play(wifi, count=10):
+def fetch_data_and_play(wifi, count=10, userName="IAFahim"):
     if wifi.isconnected():
-        print("connected")
+        print("connected going to run 10 times")
         req = 0
         while (req < count):
             x = urequests.request("GET",
-                                  url="https://iftabcaiiwbjykjgffnp.supabase.co/rest/v1/esp32?username=eq.IAFahim&select=*",
+                                  url="https://iftabcaiiwbjykjgffnp.supabase.co/rest/v1/esp32?username=eq." + userName + "&select=*",
                                   headers={'content-type': 'application/json',
                                            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmdGFiY2FpaXdianlramdmZm5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjA2NDIwMDUsImV4cCI6MTk3NjIxODAwNX0.gkcMApVBIh477Q5g47CdzkZXJ2lvlftsEUkTMAN4FsI",
                                            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmdGFiY2FpaXdianlramdmZm5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjA2NDIwMDUsImV4cCI6MTk3NjIxODAwNX0.gkcMApVBIh477Q5g47CdzkZXJ2lvlftsEUkTMAN4FsI"})
@@ -100,7 +102,7 @@ def fetch_data_and_play(wifi, count=10):
             morseCodeStr = obj[0]["data"]["morseCode"]
             encode_to_morse(morseCodeStr, Led, sound=Sound)
             req += 1
-            time.sleep(5)
+            time.sleep(2)
     else:
         encode_to_morse("SOS", Led, sound=Sound)
 
@@ -131,5 +133,8 @@ def encode_to_morse(message, led, sound):
 Led = machine.Pin(2, mode=machine.Pin.OUT)
 Sound = machine.Pin(32, mode=machine.Pin.OUT)
 
-wifi = connect()
-fetch_data_and_play(wifi, 10, Led, Sound)
+UserName = "IAFahim"
+wifi = connect(ssid='HP_LaserZet_2045',password='fahimfahim', times=15)
+
+time.sleep(2)
+fetch_data_and_play(wifi, 10, UserName)
